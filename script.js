@@ -15,3 +15,29 @@ const renderGoodsList = (list) => {
     document.querySelector('.goods-list').innerHTML = goodsLs;
 }
 renderGoodsList(goods);
+
+class GoodsList {
+    constructor() {
+        this.goods = [];
+    }
+    fetchGoods() {
+        this.items = goods;
+    }
+    priceSum() {
+        return this.items.reduce((prev, { price }) => {
+            return prev + price
+        }, 0)
+    }
+    render() {
+        const goods = this.items.map(item => {
+            const goodItem = new GoodsItem(item);
+            return goodItem.render()
+        }).join('');
+
+        document.querySelector('.goods-list').innerHTML = goods;
+    }
+}
+const goodsList = new GoodsList();
+goodsList.fetchGoods();
+goodsList.render();
+goodsList.priceSum();
