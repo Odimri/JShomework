@@ -5,27 +5,43 @@ const goods = [
     { title: 'Shoes', price: 250 },
 ];
 
-const renderGoodsItem = (title = 'item', price = 200) => {
-    return `<div class="goods-item"><h3>${title}</h3><p>${price}</p></div>`;
-};
+const GET_GOODS_ITEMS = 'https://raw.githubusercontent.com/GeekBrainsTutorial/online-store-api/master/responses/catalogData.json'
+const GET_BASKET_GOODS_ITEMS = 'https://raw.githubusercontent.com/GeekBrainsTutorial/online-store-api/master/responses/getBasket.json'
 
-const renderGoodsList = (list) => {
-    let goodsList = list.map(item => renderGoodsItem(item.title, item.price));
-    let goodsLs = goodsList.join('');
-    document.querySelector('.goods-list').innerHTML = goodsLs;
-}
-renderGoodsList(goods);
-
-class GoodsList {
-    constructor() {
-        this.goods = [];
+function service(url, callback) {
+    xhr = new XMLHttpRequest();
+    xhr.open('GET', url);
+    xhr.send();
+    xhr.onload = () => {
+        callback(JSON.parse(xhr.response))
     }
-    fetchGoods() {
-        this.items = goods;
+}
+
+class GoodsItem {
+    constructor({ product_name, price }) {
+        this.product_name = product_name;
+        this.price = price;
+    }
+    render() {
+        return `
+      <div class="goods-item">
+        <h3>${this.product_name}</h3>
+        <p>${this.price}</p>
+      </div>
+    `;
+    }
+}
+class GoodsList {
+    items = [];
+    fetchGoods(callback) {
+        service(GET_GOODS_ITEMS, (data) => {
+            this.items = data;
+            callback()
+        });
     }
     priceSum() {
         return this.items.reduce((prev, { price }) => {
-            return prev + price
+            return prev + price;
         }, 0)
     }
     render() {
@@ -37,7 +53,21 @@ class GoodsList {
         document.querySelector('.goods-list').innerHTML = goods;
     }
 }
+
+class CartGoodsList {
+    items = [];
+    fetchGoods() {
+        service(GET_BASKET_GOODS_ITEMS, (data) => {
+            this.items = data.contents;
+            callback()
+        });
+    }
+}
+
 const goodsList = new GoodsList();
-goodsList.fetchGoods();
-goodsList.render();
-goodsList.priceSum();
+goodsList.fetchGoods(() => {
+    goodsList.render();
+});
+
+const cartGoodsList = new CartGoodsList();
+cartGoodsList.fetchGoods()
