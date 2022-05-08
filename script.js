@@ -4,28 +4,38 @@ const goods = [
     { title: 'Jacket', price: 350 },
     { title: 'Shoes', price: 250 },
 ];
+const BASE_URL = 'https://raw.githubusercontent.com/GeekBrainsTutorial/online-store-api/master/responses/';
+const GET_GOODS_ITEMS = `${BASE_URL}catalogData.json`
+const GET_BASKET_GOODS_ITEMS = `${BASE_URL}getBasket.json`
 
-const renderGoodsItem = (title = 'item', price = 200) => {
-    return `<div class="goods-item"><h3>${title}</h3><p>${price}</p></div>`;
-};
-
-const renderGoodsList = (list) => {
-    let goodsList = list.map(item => renderGoodsItem(item.title, item.price));
-    let goodsLs = goodsList.join('');
-    document.querySelector('.goods-list').innerHTML = goodsLs;
+function service(url) {
+    return fetch(url).then((res) => res.json())
 }
-renderGoodsList(goods);
 
-class GoodsList {
-    constructor() {
-        this.goods = [];
+class GoodsItem {
+    constructor({ product_name, price }) {
+        this.product_name = product_name;
+        this.price = price;
     }
+    render() {
+        return `
+      <div class="goods-item">
+        <h3>${this.product_name}</h3>
+        <p>${this.price}</p>
+      </div>
+    `;
+    }
+}
+class GoodsList {
+    items = [];
     fetchGoods() {
-        this.items = goods;
+        return service(GET_GOODS_ITEMS).then((data) => {
+            this.items = data;
+        });
     }
     priceSum() {
         return this.items.reduce((prev, { price }) => {
-            return prev + price
+            return prev + price;
         }, 0)
     }
     render() {
@@ -37,7 +47,20 @@ class GoodsList {
         document.querySelector('.goods-list').innerHTML = goods;
     }
 }
+
+class CartGoodsList {
+    items = [];
+    fetchGoods() {
+        service(GET_BASKET_GOODS_ITEMS, (data) => {
+            this.items = data.contents;
+        });
+    }
+}
+
 const goodsList = new GoodsList();
-goodsList.fetchGoods();
-goodsList.render();
-goodsList.priceSum();
+goodsList.fetchGoods().then(=> {
+    goodsList.render();
+});
+
+const cartGoodsList = new CartGoodsList();
+cartGoodsList.fetchGoods()
