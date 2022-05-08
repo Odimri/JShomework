@@ -58,7 +58,7 @@ class CartGoodsList {
 }
 
 const goodsList = new GoodsList();
-goodsList.fetchGoods().then(=> {
+goodsList.fetchGoods().then(() => {
     goodsList.render();
 });
 
