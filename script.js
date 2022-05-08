@@ -4,17 +4,12 @@ const goods = [
     { title: 'Jacket', price: 350 },
     { title: 'Shoes', price: 250 },
 ];
+const BASE_URL = 'https://raw.githubusercontent.com/GeekBrainsTutorial/online-store-api/master/responses/';
+const GET_GOODS_ITEMS = `${BASE_URL}catalogData.json`
+const GET_BASKET_GOODS_ITEMS = `${BASE_URL}getBasket.json`
 
-const GET_GOODS_ITEMS = 'https://raw.githubusercontent.com/GeekBrainsTutorial/online-store-api/master/responses/catalogData.json'
-const GET_BASKET_GOODS_ITEMS = 'https://raw.githubusercontent.com/GeekBrainsTutorial/online-store-api/master/responses/getBasket.json'
-
-function service(url, callback) {
-    xhr = new XMLHttpRequest();
-    xhr.open('GET', url);
-    xhr.send();
-    xhr.onload = () => {
-        callback(JSON.parse(xhr.response))
-    }
+function service(url) {
+    return fetch(url).then((res) => res.json())
 }
 
 class GoodsItem {
@@ -33,10 +28,9 @@ class GoodsItem {
 }
 class GoodsList {
     items = [];
-    fetchGoods(callback) {
-        service(GET_GOODS_ITEMS, (data) => {
+    fetchGoods() {
+        return service(GET_GOODS_ITEMS).then((data) => {
             this.items = data;
-            callback()
         });
     }
     priceSum() {
@@ -59,13 +53,12 @@ class CartGoodsList {
     fetchGoods() {
         service(GET_BASKET_GOODS_ITEMS, (data) => {
             this.items = data.contents;
-            callback()
         });
     }
 }
 
 const goodsList = new GoodsList();
-goodsList.fetchGoods(() => {
+goodsList.fetchGoods().then(=> {
     goodsList.render();
 });
 
