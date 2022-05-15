@@ -1,43 +1,43 @@
-const goods = [
-    { title: 'Shirt', price: 150 },
-    { title: 'Socks', price: 50 },
-    { title: 'Jacket', price: 350 },
-    { title: 'Shoes', price: 250 },
-];
+const BASE_URL = 'https://raw.githubusercontent.com/GeekBrainsTutorial/online-store-api/master/responses/';
+const GET_GOODS_ITEMS = `${BASE_URL}catalogData.json`
+const GET_BASKET_GOODS_ITEMS = `${BASE_URL}getBasket.json`
 
-const renderGoodsItem = (title = 'item', price = 200) => {
-    return `<div class="goods-item"><h3>${title}</h3><p>${price}</p></div>`;
-};
-
-const renderGoodsList = (list) => {
-    let goodsList = list.map(item => renderGoodsItem(item.title, item.price));
-    let goodsLs = goodsList.join('');
-    document.querySelector('.goods-list').innerHTML = goodsLs;
+function service(url) {
+  return fetch(url)
+  .then((res) => res.json())
 }
-renderGoodsList(goods);
 
-class GoodsList {
-    constructor() {
-        this.goods = [];
-    }
-    fetchGoods() {
-        this.items = goods;
-    }
-    priceSum() {
-        return this.items.reduce((prev, { price }) => {
-            return prev + price
+function init() {
+  const app = new Vue({
+    el: '#root',
+    data: {
+      items: [],
+      filteredItems: [],
+      search: ''
+    },
+    methods: {
+      fetchGoods() {
+        service(GET_GOODS_ITEMS).then((data) => {
+          this.items = data;
+          this.filteredItems = data;
+        });
+      },
+      filterItems() {
+        this.filteredItems = this.items.filter(({ product_name }) => {
+          return product_name.match(new RegExp(this.search, 'gui'))
+        })
+      },
+    },
+    computed: {
+      calculatePrice() {
+        return this.filteredItems.reduce((prev, { price }) => {
+          return prev + price;
         }, 0)
+      }
+    },
+    mounted() {
+      this.fetchGoods();
     }
-    render() {
-        const goods = this.items.map(item => {
-            const goodItem = new GoodsItem(item);
-            return goodItem.render()
-        }).join('');
-
-        document.querySelector('.goods-list').innerHTML = goods;
-    }
+  })
 }
-const goodsList = new GoodsList();
-goodsList.fetchGoods();
-goodsList.render();
-goodsList.priceSum();
+window.onload = init
