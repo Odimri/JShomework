@@ -14,8 +14,18 @@
       <header>
          <h1 class="title">TestShop</h1>
          <div class="search">
-            <input type="text" class="goods-search" v-model="search" />
-            <custom-button v-on:click="filterItems">Поиск</custom-button>
+            <form id="inputError" @submit="checkForm"
+               action="https://raw.githubusercontent.com/GeekBrainsTutorial/online-store-api/master/responses/"
+               method="post">
+               <p v-if="errors.length">
+                  <b>Пожалуйста исправьте указанные ошибки:</b>
+               <ul>
+                  <li v-for="error in errors">{{ error }}</li>
+               </ul>
+               </p>
+               <input type="text" class="goods-search" v-model="search" required placeholder="Только русские буквы" />
+               <custom-button v-on:click="filterItems">Поиск</custom-button>
+            </form>
          </div>
          <div class="actions">
             <custom-button v-on:click="setVisionCard">Корзина</custom-button>

@@ -15,6 +15,7 @@ function init() {
       </button>
     `
   })
+
   const basketGoods = Vue.component('basket-goods', {
     data() {
       return {
@@ -88,6 +89,32 @@ function init() {
     mounted() {
       this.fetchGoods();
     }
+  })
+
+  const inputError = new Vue({
+    el: '#inputError',
+    data: {
+      errors: [],
+      search: "^[А-Яа-яЁё\s]+$"
+    },
+    methods: {
+      checkForm: function (e) {
+        if (this.search) {
+          return true;
+        }
+
+        this.errors = [];
+
+        if (!this.search) {
+          this.errors.push('Указывайте только русские буквы!');
+        }
+        e.preventDefault();
+      }
+    }
+  })
+
+  const customInput = Vue.component('goods-search', {
+
   })
 }
 window.onload = init
