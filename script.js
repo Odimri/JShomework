@@ -1,43 +1,120 @@
-const goods = [
-    { title: 'Shirt', price: 150 },
-    { title: 'Socks', price: 50 },
-    { title: 'Jacket', price: 350 },
-    { title: 'Shoes', price: 250 },
-];
+const BASE_URL = 'https://raw.githubusercontent.com/GeekBrainsTutorial/online-store-api/master/responses/';
+const GET_GOODS_ITEMS = `${BASE_URL}catalogData.json`
+const GET_BASKET_GOODS_ITEMS = `${BASE_URL}getBasket.json`
 
-const renderGoodsItem = (title = 'item', price = 200) => {
-    return `<div class="goods-item"><h3>${title}</h3><p>${price}</p></div>`;
-};
-
-const renderGoodsList = (list) => {
-    let goodsList = list.map(item => renderGoodsItem(item.title, item.price));
-    let goodsLs = goodsList.join('');
-    document.querySelector('.goods-list').innerHTML = goodsLs;
+function service(url) {
+  return fetch(url)
+    .then((res) => res.json())
 }
-renderGoodsList(goods);
 
-class GoodsList {
-    constructor() {
-        this.goods = [];
+function init() {
+  const CustomButton = Vue.component('custom-button', {
+    template: `
+      <button class="search-button" type="button" v-on:click="$emit('click')">
+         <slot></slot>
+      </button>
+    `
+  })
+
+  const basketGoods = Vue.component('basket-goods', {
+    data() {
+      return {
+        basketGoodsItems: []
+      }
+    },
+
+    template: `
+      <div class="fixed-area">
+         <div class="basket-card">
+            <div class="basket-card__header">
+               <h1 class="basket-card__header__title">basket card</h1>
+               <div class="basket-card__header__delete-icon"
+                  v-on:click="$emit('closeclick')"
+               ></div>
+            </div>
+            <div class="basket-card__content">
+               content
+            </div>
+         </div>
+      </div>
+    `,
+    mounted() {
+
     }
-    fetchGoods() {
-        this.items = goods;
-    }
-    priceSum() {
-        return this.items.reduce((prev, { price }) => {
-            return prev + price
+  })
+
+  const goodsItem = Vue.component('goods-item', {
+    props: [
+      'item'
+    ],
+    template: `
+      <div class="goods-item">
+         <h3>{{ item.product_name }}</h3>
+         <p>{{ item.price }}</p>
+      </div>
+    `
+  })
+
+  const app = new Vue({
+    el: '#root',
+    data: {
+      items: [],
+      filteredItems: [],
+      search: '',
+      cardIsVision: false
+    },
+    methods: {
+      setVisionCard() {
+        this.cardIsVision = !this.cardIsVision
+      },
+      fetchGoods() {
+        service(GET_GOODS_ITEMS).then((data) => {
+          this.items = data;
+          this.filteredItems = data;
+        });
+      },
+      filterItems() {
+        this.filteredItems = this.items.filter(({ product_name }) => {
+          return product_name.match(new RegExp(this.search, 'gui'))
+        })
+      },
+    },
+    computed: {
+      calculatePrice() {
+        return this.filteredItems.reduce((prev, { price }) => {
+          return prev + price;
         }, 0)
+      }
+    },
+    mounted() {
+      this.fetchGoods();
     }
-    render() {
-        const goods = this.items.map(item => {
-            const goodItem = new GoodsItem(item);
-            return goodItem.render()
-        }).join('');
+  })
 
-        document.querySelector('.goods-list').innerHTML = goods;
+  const inputError = new Vue({
+    el: '#inputError',
+    data: {
+      errors: [],
+      search: "^[А-Яа-яЁё\s]+$"
+    },
+    methods: {
+      checkForm: function (e) {
+        if (this.search) {
+          return true;
+        }
+
+        this.errors = [];
+
+        if (!this.search) {
+          this.errors.push('Указывайте только русские буквы!');
+        }
+        e.preventDefault();
+      }
     }
+  })
+
+  const customInput = Vue.component('goods-search', {
+
+  })
 }
-const goodsList = new GoodsList();
-goodsList.fetchGoods();
-goodsList.render();
-goodsList.priceSum();
+window.onload = init
